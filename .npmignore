@@ -1,0 +1,28 @@
+# Source files
+client/
+server/
+plugin/
+
+# Config files
+tsconfig*.json
+vite.config.ts
+
+# IDE
+.idea/
+.vscode/
+
+# Development
+node_modules/
+*.log
+.DS_Store
+
+# Git
+.git/
+.gitignore
+
+# Only publish dist/
+*
+!dist/
+!package.json
+!README.md
+!LICENSE

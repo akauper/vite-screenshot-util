@@ -1,0 +1,78 @@
+{
+  "name": "vite-screenshot-util",
+  "version": "1.0.0",
+  "description": "High-quality screenshot utilities for React + Vite apps. Choose native browser APIs (no dependencies, user prompt) or Playwright (automated, headless, full auth state). Perfect for dev tools, debug menus, and capturing UI states.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./plugin": {
+      "import": "./dist/plugin/plugin.js",
+      "types": "./dist/plugin/plugin.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.client.json && tsc -p tsconfig.node.json && vite build",
+    "lint": "eslint .",
+    "server": "tsx server/screenshot-server.ts"
+  },
+  "keywords": [
+    "screenshot",
+    "react",
+    "hook",
+    "browser",
+    "capture",
+    "vite",
+    "playwright",
+    "automation",
+    "testing",
+    "debug",
+    "dev-tools",
+    "headless",
+    "getDisplayMedia"
+  ],
+  "author": "Adam Kauper <akauper@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/akauper/vite-screenshot-util.git"
+  },
+  "homepage": "https://github.com/akauper/vite-screenshot-util#readme",
+  "bugs": {
+    "url": "https://github.com/akauper/vite-screenshot-util/issues"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0 || ^19.0.0",
+    "vite": "^5.0.0",
+    "express": "^4.18.2",
+    "playwright": "^1.40.0"
+  },
+  "peerDependenciesMeta": {
+    "express": {
+      "optional": true
+    },
+    "playwright": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^24.6.0",
+    "@types/react": "^19.1.16",
+    "@vitejs/plugin-react-swc": "^4.1.0",
+    "globals": "^16.4.0",
+    "react": "^19.1.1",
+    "tsx": "^4.7.0",
+    "typescript": "~5.9.3",
+    "vite": "npm:rolldown-vite@^7.1.14",
+    "vite-plugin-dts": "^4.5.4"
+  }
+}

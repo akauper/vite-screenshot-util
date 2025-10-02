@@ -50,9 +50,9 @@
     "url": "https://github.com/akauper/vite-screenshot-util/issues"
   },
   "peerDependencies": {
+    "express": "^4.18.2 || ^5.0.0",
     "react": "^18.0.0 || ^19.0.0",
     "vite": "^5.0.0",
-    "express": "^4.18.2",
     "playwright": "^1.40.0"
   },
   "peerDependenciesMeta": {

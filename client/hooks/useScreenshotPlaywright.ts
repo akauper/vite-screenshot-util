@@ -102,13 +102,19 @@ export const useScreenshotPlaywright = (options?: UseScreenshotPlaywrightOptions
             // Get selector if element is provided
             let selector: string | undefined;
             if (screenshotOptions?.element) {
-                const el = screenshotOptions.element;
-                if (el.id) {
-                    selector = `#${el.id}`;
-                } else if (el.className) {
-                    selector = `.${el.className.split(' ')[0]}`;
+                // If element is already a string (CSS selector), use it directly
+                if (typeof screenshotOptions.element === 'string') {
+                    selector = screenshotOptions.element;
                 } else {
-                    selector = el.tagName.toLowerCase();
+                    // Otherwise, generate a selector from the HTMLElement
+                    const el = screenshotOptions.element;
+                    if (el.id) {
+                        selector = `#${el.id}`;
+                    } else if (el.className) {
+                        selector = `.${el.className.split(' ')[0]}`;
+                    } else {
+                        selector = el.tagName.toLowerCase();
+                    }
                 }
             }
 

@@ -19,7 +19,7 @@ export interface UseScreenshotOptions {
 }
 
 export interface TakeScreenshotOptions {
-    element?: HTMLElement | null;
+    element?: HTMLElement | string | null;
     scale?: number;
 }
 

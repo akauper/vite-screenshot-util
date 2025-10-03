@@ -15,7 +15,7 @@ npm install vite-screenshot-util
 
 ### For Native Screenshots Only
 
-No additional dependencies needed! Just install the package.
+No additional dependencies needed! `html2canvas-pro` is bundled for element screenshots.
 
 ### For Playwright Screenshots
 
@@ -45,7 +45,7 @@ export default defineConfig({
 
 ### Native Browser Screenshots (`useScreenshot`)
 
-Uses `getDisplayMedia` for full page screenshots and SVG `foreignObject` for element screenshots. No server required, but prompts user to select tab/window.
+Uses `getDisplayMedia` for full page screenshots and `html2canvas-pro` for element screenshots. No server required, but full-page mode prompts user to select tab/window.
 
 ```tsx
 import { useScreenshot } from 'vite-screenshot-util';
@@ -65,12 +65,28 @@ function MyComponent() {
         Take Full Page Screenshot
       </button>
 
-      <div ref={divRef}>
+      <div ref={divRef} id="my-chart">
+        {/* Capture by ref */}
         <button onClick={() => takeScreenshot({
           element: divRef.current,
           scale: 2
         })}>
           Capture This Div (2x scale)
+        </button>
+
+        {/* Capture by CSS selector */}
+        <button onClick={() => takeScreenshot({
+          element: '#my-chart',
+          scale: 2
+        })}>
+          Capture by ID
+        </button>
+
+        <button onClick={() => takeScreenshot({
+          element: '.chart-container',
+          scale: 2
+        })}>
+          Capture by Class
         </button>
       </div>
     </div>
@@ -80,7 +96,7 @@ function MyComponent() {
 
 **Options:**
 
-- `element?: HTMLElement` - Specific element to capture (omit for full page)
+- `element?: HTMLElement | string` - Specific element to capture (HTMLElement ref or CSS selector; omit for full page)
 - `scale?: number` - Scale factor for element screenshots (default: 1)
 
 ### Playwright Screenshots (`useScreenshotPlaywright`)
@@ -125,7 +141,7 @@ function MyComponent() {
 
 **Options:**
 
-- `element?: HTMLElement` - Specific element to capture (omit for viewport)
+- `element?: HTMLElement | string` - Specific element to capture (HTMLElement ref or CSS selector; omit for viewport)
 - `scale?: number` - Device scale factor (default: 2)
 - `copyCookies?: boolean` - Copy cookies to headless browser (default: true)
 - `copyLocalStorage?: boolean` - Copy localStorage to headless browser (default: true)
@@ -178,17 +194,18 @@ type ScreenshotResult = ScreenshotSuccess | ScreenshotError;
 ### Native Browser API (`useScreenshot`)
 
 1. **Full Page**: Uses `navigator.mediaDevices.getDisplayMedia()` to prompt user to select tab/window
-2. **Element**: Clones element into SVG `foreignObject`, renders to canvas at specified scale
+2. **Element**: Uses `html2canvas-pro` to render element to canvas at specified scale, handling cross-origin content
 3. Downloads as PNG file via browser download
 
 **Pros:**
-- No dependencies
+- Minimal dependencies (html2canvas-pro bundled)
 - High quality
 - Works everywhere
+- Handles cross-origin content in elements
 
 **Cons:**
-- Prompts user to select tab/window
-- Cannot automate
+- Full page mode prompts user to select tab/window
+- Cannot automate full page captures
 - Cannot screenshot different URLs
 
 ### Playwright API (`useScreenshotPlaywright`)

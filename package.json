@@ -1,6 +1,6 @@
 {
   "name": "vite-screenshot-util",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "High-quality screenshot utilities for React + Vite apps. Choose native browser APIs (no dependencies, user prompt) or Playwright (automated, headless, full auth state). Perfect for dev tools, debug menus, and capturing UI states.",
   "type": "module",
   "main": "./dist/index.js",
@@ -49,11 +49,14 @@
   "bugs": {
     "url": "https://github.com/akauper/vite-screenshot-util/issues"
   },
+  "dependencies": {
+    "html2canvas-pro": "^1.5.11"
+  },
   "peerDependencies": {
     "express": "^4.18.2 || ^5.0.0",
+    "playwright": "^1.40.0",
     "react": "^18.0.0 || ^19.0.0",
-    "vite": "^5.0.0",
-    "playwright": "^1.40.0"
+    "vite": "^5.0.0"
   },
   "peerDependenciesMeta": {
     "express": {
@@ -69,6 +72,7 @@
     "@types/react": "^19.1.16",
     "@vitejs/plugin-react-swc": "^4.1.0",
     "globals": "^16.4.0",
+    "html2canvas-pro": "^1.5.11",
     "react": "^19.1.1",
     "tsx": "^4.7.0",
     "typescript": "~5.9.3",

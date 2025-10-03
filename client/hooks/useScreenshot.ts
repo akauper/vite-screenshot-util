@@ -1,12 +1,13 @@
 import { useCallback, useState } from "react";
 import type { UseScreenshotOptions, TakeScreenshotOptions, ScreenshotSuccess } from "../types";
 import { ScreenshotError } from "../types";
+import html2canvas from 'html2canvas-pro';
 
 /**
  * React hook for taking high-quality screenshots using native browser APIs.
  *
  * Uses getDisplayMedia for full page screenshots (prompts user to select tab/window)
- * and SVG foreignObject for element screenshots. No server required.
+ * and html2canvas-pro for element screenshots. No server required.
  *
  * @param options - Hook configuration
  * @param options.onStart - Called when screenshot capture begins
@@ -25,8 +26,12 @@ import { ScreenshotError } from "../types";
  * // Full page screenshot (prompts user)
  * await takeScreenshot();
  *
- * // Element screenshot
+ * // Element screenshot by ref
  * await takeScreenshot({ element: divRef.current, scale: 2 });
+ *
+ * // Element screenshot by CSS selector
+ * await takeScreenshot({ element: '#my-chart', scale: 2 });
+ * await takeScreenshot({ element: '.chart-container', scale: 2 });
  * ```
  */
 export const useScreenshot = (options?: UseScreenshotOptions) => {
@@ -36,7 +41,7 @@ export const useScreenshot = (options?: UseScreenshotOptions) => {
      * Captures a screenshot using native browser APIs.
      *
      * @param screenshotOptions - Screenshot configuration
-     * @param screenshotOptions.element - Specific element to capture (if omitted, prompts user for full page)
+     * @param screenshotOptions.element - Specific element to capture (HTMLElement ref or CSS selector; if omitted, prompts user for full page)
      * @param screenshotOptions.scale - Scale factor for element screenshots (default: 1)
      *
      * @example
@@ -44,8 +49,12 @@ export const useScreenshot = (options?: UseScreenshotOptions) => {
      * // Full page (prompts user to select tab/window)
      * await takeScreenshot();
      *
-     * // Specific element with 2x scaling
+     * // Element by ref with 2x scaling
      * await takeScreenshot({ element: divRef.current, scale: 2 });
+     *
+     * // Element by CSS selector
+     * await takeScreenshot({ element: '#my-chart', scale: 2 });
+     * await takeScreenshot({ element: '.my-class', scale: 2 });
      * ```
      */
     const takeScreenshot = useCallback(async (screenshotOptions?: TakeScreenshotOptions) => {
@@ -55,65 +64,56 @@ export const useScreenshot = (options?: UseScreenshotOptions) => {
         await new Promise(resolve => setTimeout(resolve, 100));
 
         try {
-            const element = screenshotOptions?.element;
+            let element = screenshotOptions?.element;
+
+            // If element is a string (CSS selector), find it in the DOM
+            if (typeof element === 'string') {
+                // Try as-is first, then with common selector prefixes
+                let foundElement = document.querySelector(element);
+
+                // If not found and no prefix, try with # for id
+                if (!foundElement && !element.startsWith('.') && !element.startsWith('#')) {
+                    foundElement = document.querySelector(`#${element}`);
+                }
+
+                // If still not found, try with . for class
+                if (!foundElement && !element.startsWith('.') && !element.startsWith('#')) {
+                    foundElement = document.querySelector(`.${element}`);
+                }
+
+                if (!foundElement) {
+                    throw new Error(`Element not found: ${element}`);
+                }
+                element = foundElement as HTMLElement;
+            }
 
             if (element) {
-                // For specific elements, use foreignObject SVG approach
-                const rect = element.getBoundingClientRect();
+                // For specific elements, use html2canvas-pro
                 const scale = screenshotOptions?.scale || 1;
 
-                // Clone the element
-                const clone = element.cloneNode(true) as HTMLElement;
+                const canvas = await html2canvas(element, {
+                    scale,
+                    useCORS: true,
+                    allowTaint: false,
+                    backgroundColor: null
+                });
 
-                // Create SVG
-                const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-                svg.setAttribute('width', String(rect.width * scale));
-                svg.setAttribute('height', String(rect.height * scale));
-                svg.setAttribute('viewBox', `0 0 ${rect.width} ${rect.height}`);
+                canvas.toBlob((blob: Blob | null) => {
+                    if (blob) {
+                        const link = document.createElement('a');
+                        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+                        const filename = `screenshot-${timestamp}.png`;
+                        link.download = filename;
+                        link.href = URL.createObjectURL(blob);
+                        link.click();
+                        URL.revokeObjectURL(link.href);
 
-                const foreignObject = document.createElementNS('http://www.w3.org/2000/svg', 'foreignObject');
-                foreignObject.setAttribute('width', String(rect.width));
-                foreignObject.setAttribute('height', String(rect.height));
-                foreignObject.appendChild(clone);
-                svg.appendChild(foreignObject);
-
-                // Convert to data URL
-                const svgData = new XMLSerializer().serializeToString(svg);
-                const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
-                const url = URL.createObjectURL(svgBlob);
-
-                // Draw to canvas for higher quality
-                const img = new Image();
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = rect.width * scale;
-                    canvas.height = rect.height * scale;
-                    const ctx = canvas.getContext('2d');
-
-                    if (ctx) {
-                        ctx.scale(scale, scale);
-                        ctx.drawImage(img, 0, 0);
-
-                        canvas.toBlob((blob) => {
-                            if (blob) {
-                                const link = document.createElement('a');
-                                const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-                                const filename = `screenshot-${timestamp}.png`;
-                                link.download = filename;
-                                link.href = URL.createObjectURL(blob);
-                                link.click();
-                                URL.revokeObjectURL(link.href);
-
-                                const result: ScreenshotSuccess = { path: filename };
-                                options?.onEnd?.(result);
-                                options?.onSuccess?.(result);
-                            }
-                            URL.revokeObjectURL(url);
-                            setIsTakingScreenshot(false);
-                        });
+                        const result: ScreenshotSuccess = { path: filename };
+                        options?.onEnd?.(result);
+                        options?.onSuccess?.(result);
                     }
-                };
-                img.src = url;
+                    setIsTakingScreenshot(false);
+                });
             } else {
                 // For full page, use getDisplayMedia
                 const stream = await navigator.mediaDevices.getDisplayMedia({
@@ -142,7 +142,7 @@ export const useScreenshot = (options?: UseScreenshotOptions) => {
 
                             stream.getTracks().forEach(track => track.stop());
 
-                            canvas.toBlob((blob) => {
+                            canvas.toBlob((blob: Blob | null) => {
                                 if (blob) {
                                     const url = URL.createObjectURL(blob);
                                     const link = document.createElement('a');

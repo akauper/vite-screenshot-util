@@ -1,6 +1,6 @@
 {
   "name": "vite-screenshot-util",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "High-quality screenshot utilities for React + Vite apps. Choose native browser APIs (no dependencies, user prompt) or Playwright (automated, headless, full auth state). Perfect for dev tools, debug menus, and capturing UI states.",
   "type": "module",
   "main": "./dist/index.js",
